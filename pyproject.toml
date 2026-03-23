@@ -1,0 +1,84 @@
+[project]
+name = "deep-learning-rag-agent"
+version = "0.1.0"
+description = "RAG-powered deep learning interview preparation agent"
+readme = "README.md"
+requires-python = ">=3.11, <3.13"
+
+dependencies = [
+    # LangChain core
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-community>=0.3.0",
+
+    # LangGraph
+    "langgraph>=1.0.0",
+
+    # LLM provider integrations — student selects one via .env
+    "langchain-groq>=0.2.0",
+    "langchain-ollama>=0.2.0",
+    "langchain-openai>=0.2.0",       # also covers LM Studio (OpenAI-compatible)
+
+    # Vector store
+    "chromadb>=0.5.0",
+
+    # Embeddings
+    "sentence-transformers>=3.0.0",  # local embeddings, no API key required
+
+    # Document loading
+    "pypdf>=4.0.0",                  # PDF ingestion
+    "unstructured>=0.15.0",          # general document parsing
+
+    # UI
+    "streamlit>=1.38.0",
+    "gradio>=4.40.0",
+
+    # Configuration and environment
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+
+    # Utilities
+    "tiktoken>=0.7.0",               # token counting for context window management
+    "tenacity>=8.0.0",               # retry logic for API calls
+    "loguru>=0.7.0",                 # structured logging
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.6.0",                   # linting and formatting (replaces flake8 + black)
+    "mypy>=1.11.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rag_agent"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]       # pycodestyle + pyflakes + isort
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
