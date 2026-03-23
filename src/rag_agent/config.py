@@ -15,6 +15,7 @@ from __future__ import annotations
 from enum import Enum
 from functools import lru_cache
 
+from langchain_core.embeddings import Embeddings
 from langchain_core.language_models.chat_models import BaseChatModel
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -175,8 +176,18 @@ class LLMFactory:
         Interview talking point: Groq uses LPU (Language Processing Unit)
         inference for significantly lower latency than GPU-based inference.
         """
-        # TODO: implement using langchain_groq.ChatGroq
-        raise NotImplementedError
+        if not self._settings.groq_api_key:
+            raise EnvironmentError(
+                "GROQ_API_KEY is required when LLM_PROVIDER=groq"
+            )
+
+        from langchain_groq import ChatGroq
+
+        return ChatGroq(
+            model=self._settings.groq_model,
+            api_key=self._settings.groq_api_key,
+            temperature=0.2,
+        )
 
     def _create_ollama(self) -> BaseChatModel:
         """
@@ -188,8 +199,13 @@ class LLMFactory:
         Interview talking point: local inference eliminates data privacy
         concerns and removes API cost and latency entirely.
         """
-        # TODO: implement using langchain_ollama.ChatOllama
-        raise NotImplementedError
+        from langchain_ollama import ChatOllama
+
+        return ChatOllama(
+            model=self._settings.ollama_model,
+            base_url=self._settings.ollama_base_url,
+            temperature=0.2,
+        )
 
     def _create_lmstudio(self) -> BaseChatModel:
         """
@@ -205,8 +221,14 @@ class LLMFactory:
         OpenAI-native tooling to work with self-hosted models without
         code changes — just a base_url swap.
         """
-        # TODO: implement using langchain_openai.ChatOpenAI with base_url override
-        raise NotImplementedError
+        from langchain_openai import ChatOpenAI
+
+        return ChatOpenAI(
+            model=self._settings.lmstudio_model,
+            base_url=self._settings.lmstudio_base_url,
+            api_key="lm-studio",
+            temperature=0.2,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +253,7 @@ class EmbeddingFactory:
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
 
-    def create(self):
+    def create(self) -> Embeddings:
         """
         Instantiate and return the configured embedding model.
 
@@ -254,7 +276,7 @@ class EmbeddingFactory:
         else:
             raise ValueError(f"Unsupported embedding provider: {provider}")
 
-    def _create_local(self):
+    def _create_local(self) -> Embeddings:
         """
         Create a local sentence-transformers embedding model.
 
@@ -266,14 +288,16 @@ class EmbeddingFactory:
         never leaves the machine — important for proprietary datasets.
         """
         from langchain_community.embeddings import HuggingFaceEmbeddings
+
         return HuggingFaceEmbeddings(model_name=self._settings.embedding_model)
 
-    def _create_openai(self):
+    def _create_openai(self) -> Embeddings:
         """
         Create an OpenAI embedding model (text-embedding-3-small).
 
         Requires OPENAI_API_KEY. Higher quality than local models
         but incurs API cost per embedding call.
         """
-        # TODO: implement using langchain_openai.OpenAIEmbeddings
-        raise NotImplementedError
+        from langchain_openai import OpenAIEmbeddings
+
+        return OpenAIEmbeddings(model="text-embedding-3-small")

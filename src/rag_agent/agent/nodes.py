@@ -12,10 +12,17 @@ PEP 8 | OOP | Single Responsibility
 
 from __future__ import annotations
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, trim_messages
+from typing import Any
+
+from langchain_core.messages import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage,
+    trim_messages,
+)
 
 from rag_agent.agent.prompts import (
-    QUESTION_GENERATION_PROMPT,
+    QUERY_REWRITE_PROMPT,
     SYSTEM_PROMPT,
 )
 from rag_agent.agent.state import AgentResponse, AgentState, RetrievedChunk
@@ -68,26 +75,19 @@ def query_rewrite_node(state: AgentState) -> dict:
     if not original_query:
         # Fallback if no human message found
         return {"original_query": "", "rewritten_query": ""}
-
-    rewrite_prompt = (
-        "Rewrite the following user query to be optimal for vector similarity search. "
-        "Extract only the key technical terms and concepts. Do not include conversational filler. "
-        f"Query: {original_query}"
-    )
-    
     try:
-        response = llm.invoke([SystemMessage(content=rewrite_prompt)])
-        rewritten_query = response.content.strip()
-        # Fallback if model gives empty response or too long response (hallucinated explanation)
-        if not rewritten_query or len(rewritten_query) > 200:
-            rewritten_query = original_query
-    except Exception as e:
-        # Log failure properly in a real app, fallback to original query
-        rewritten_query = original_query
-        
-    return {"original_query": original_query, "rewritten_query": rewritten_query}
-
-
+        rewrite_prompt = QUERY_REWRITE_PROMPT.format(original_query=original_query)
+        rewritten = llm.invoke([HumanMessage(content=rewrite_prompt)])
+        rewritten_query = str(rewritten.content).strip()
+        return {
+            "original_query": original_query,
+            "rewritten_query": rewritten_query or original_query,
+        }
+    except Exception:
+        return {
+            "original_query": original_query,
+            "rewritten_query": original_query,
+        }
 # ---------------------------------------------------------------------------
 # Node: Retriever
 # ---------------------------------------------------------------------------
@@ -125,7 +125,7 @@ def retrieval_node(state: AgentState) -> dict:
         )
     except Exception as e:
         chunks = []
-        
+
     if not chunks:
         return {"retrieved_chunks": [], "no_context_found": True}
     else:

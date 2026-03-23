@@ -89,22 +89,23 @@ generation_node  [END]   ← hallucination guard fires here
         multiple Streamlit sessions via st.cache_resource.
         """
         graph = StateGraph(AgentState)
-        
+
         graph.add_node("query_rewrite", query_rewrite_node)
         graph.add_node("retrieval", retrieval_node)
         graph.add_node("generation", generation_node)
-        
+
         graph.add_edge(START, "query_rewrite")
         graph.add_edge("query_rewrite", "retrieval")
-        
         graph.add_conditional_edges(
             "retrieval",
             should_retry_retrieval,
-            {"generate": "generation", "end": END}
+            {
+                "generate": "generation",
+                "end": END,
+            },
         )
-        
         graph.add_edge("generation", END)
-        
+
         return graph.compile(checkpointer=self._checkpointer)
 
 

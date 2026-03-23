@@ -17,12 +17,34 @@ from __future__ import annotations
 import pytest
 
 from rag_agent.agent.state import ChunkMetadata, DocumentChunk
+from rag_agent.config import Settings
 from rag_agent.vectorstore.store import VectorStoreManager
 
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
+import uuid
+import os
+
+@pytest.fixture
+def test_settings(tmp_path) -> Settings:
+    """Provide a minimal configuration pointing to a temporary DB path."""
+    random_collection = f"test_collection_{uuid.uuid4().hex[:8]}"
+    db_path = str(tmp_path / "chroma_db")
+    
+    # We must mock os.environ because Pydantic BaseSettings alias rules 
+    # will override kwargs with env variables if they are present.
+    os.environ["CHROMA_DB_PATH"] = db_path
+    os.environ["CHROMA_COLLECTION_NAME"] = random_collection
+    
+    return Settings(
+        chroma_db_path=db_path,
+        chroma_collection_name=random_collection,
+        embedding_provider="local",
+        embedding_model="all-MiniLM-L6-v2",
+    )
 
 
 @pytest.fixture
@@ -118,31 +140,32 @@ class TestDuplicateDetection:
     """
 
     def test_new_chunk_is_not_duplicate(
-        self, tmp_path, sample_chunk: DocumentChunk
+        self, test_settings: Settings, sample_chunk: DocumentChunk
     ) -> None:
         """A chunk that has never been ingested must not be flagged as duplicate."""
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path)))
+        store = VectorStoreManager(settings=test_settings)
         assert store.check_duplicate(sample_chunk.chunk_id) is False
 
     def test_ingested_chunk_is_duplicate(
-        self, tmp_path, sample_chunk: DocumentChunk
+        self, test_settings: Settings, sample_chunk: DocumentChunk
     ) -> None:
         """A chunk that has been ingested must be flagged as duplicate on re-check."""
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path)))
+        store = VectorStoreManager(settings=test_settings)
         store.ingest([sample_chunk])
         assert store.check_duplicate(sample_chunk.chunk_id) is True
 
     def test_ingestion_skips_duplicate(
-        self, tmp_path, sample_chunk: DocumentChunk
+        self, test_settings: Settings, sample_chunk: DocumentChunk
     ) -> None:
         """Ingesting the same chunk twice must result in skipped=1 on second call."""
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path)))
-        store.ingest([sample_chunk])
-        result = store.ingest([sample_chunk])
-        assert result.skipped == 1
+        store = VectorStoreManager(settings=test_settings)
+        res1 = store.ingest([sample_chunk])
+        assert res1.ingested == 1
+        assert res1.skipped == 0
+        
+        res2 = store.ingest([sample_chunk])
+        assert res2.ingested == 0
+        assert res2.skipped == 1
 
 
 # ---------------------------------------------------------------------------
@@ -159,45 +182,51 @@ class TestRetrieval:
     """
 
     def test_relevant_query_returns_results(
-        self, tmp_path, sample_chunk: DocumentChunk
+        self, test_settings: Settings, sample_chunk: DocumentChunk
     ) -> None:
         """A query semantically similar to an ingested chunk must return results."""
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path)))
+        store = VectorStoreManager(settings=test_settings)
         store.ingest([sample_chunk])
-        results = store.query("LSTM gate mechanism")
+        results = store.query("LSTM gate mechanism", k=4)
         assert len(results) > 0
+        assert results[0].chunk_id == sample_chunk.chunk_id
 
-    def test_irrelevant_query_returns_empty(self, tmp_path, sample_chunk: DocumentChunk) -> None:
+    def test_irrelevant_query_returns_empty(self, test_settings: Settings, sample_chunk: DocumentChunk) -> None:
         """
         A query with no semantic similarity to the corpus must return empty list.
+
+        This tests the hallucination guard threshold. The system must return
+        an empty list — not low-quality chunks — when nothing matches.
         """
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path), similarity_threshold=0.5))
+        store = VectorStoreManager(settings=test_settings)
         store.ingest([sample_chunk])
-        results = store.query("history of the roman empire")
+        results = store.query("history of the roman empire", k=4)
         assert len(results) == 0
 
     def test_topic_filter_restricts_results(
         self,
-        tmp_path,
+        test_settings: Settings,
         sample_chunk: DocumentChunk,
         bonus_chunk: DocumentChunk,
     ) -> None:
         """Results with topic_filter='LSTM' must not include GAN chunks."""
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path)))
+        store = VectorStoreManager(settings=test_settings)
         store.ingest([sample_chunk, bonus_chunk])
-        results = store.query("neural networks", topic_filter="LSTM")
+        
+        results = store.query("networks", k=4, topic_filter="LSTM")
+        assert len(results) > 0
         assert all(c.metadata.topic == "LSTM" for c in results)
 
     def test_results_sorted_by_score_descending(
-        self, tmp_path, sample_chunk: DocumentChunk, bonus_chunk: DocumentChunk
+        self, test_settings: Settings, sample_chunk: DocumentChunk, bonus_chunk: DocumentChunk
     ) -> None:
         """Retrieved chunks must be sorted with highest similarity first."""
-        from rag_agent.config import Settings
-        store = VectorStoreManager(settings=Settings(chroma_db_path=str(tmp_path)))
+        store = VectorStoreManager(settings=test_settings)
         store.ingest([sample_chunk, bonus_chunk])
-        results = store.query("deep learning architectures")
-        if len(results) > 1:
-            assert results[0].score >= results[1].score
+        
+        results = store.query("generative adversarial networks", k=4)
+        assert len(results) >= 1
+        
+        # Verify monotonically decreasing scores
+        scores = [c.score for c in results]
+        assert scores == sorted(scores, reverse=True)
