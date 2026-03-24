@@ -11,30 +11,7 @@
 ---
 
 ## Architecture Diagram
-```mermaid
-flowchart TD
-    subgraph Ingestion["Ingestion Pipeline"]
-        A[Corpus Files .md/.pdf] -->|"DocumentChunker (512 char, 50 overlap)"| B[Raw Chunks]
-        B --> C{"Check Duplicate (SHA256 Hash)"}
-        C -->|"Hash found"| D[Skip Chunk]
-        C -->|"New Hash"| E["EmbeddingFactory (all-MiniLM-L6-v2)"]
-        E --> F[("ChromaDB vector store")]
-    end
 
-    subgraph Chat["Retrieval & Generation Pipeline"]
-        G["User Query (Streamlit UI)"] -->|"session_state.thread_id maintains memory"| H("query_rewrite_node")
-        H -->|"Dense technical query"| I("retrieval_node")
-        F -.->|"Cosine Similarity (k=4)"| I
-        I --> J{"Similarity > 0.3 threshold"}
-        J -->|"No (fails Hallucination Guard)"| K["Return 'No Context Found' warning"]
-        J -->|"Yes"| L("generation_node")
-        L -->|"Groq LLM + System constraints"| M["Final Answer w/ Citations"]
-    end
-    
-    style D fill:#f9cfcf,stroke:#ff9999
-    style K fill:#f9cfcf,stroke:#ff9999
-    style M fill:#c2e8c6,stroke:#82c988
-    style F fill:#e5ccff,stroke:#d18ce0
 Replace this section with your team's completed flow chart.
 Export from FigJam, Miro, or draw.io and embed as an image,
 or describe the architecture as an ASCII diagram.
