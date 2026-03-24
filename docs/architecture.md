@@ -55,7 +55,7 @@ Recursive character splitting and markdown header splitting with max chunk size 
   A deterministic 16-character hex string ID is generated derived from the SHA-256 hash of `source::chunk_text`. Content hashing is used rather than simple filename matching because it detects identical content even if files are renamed, and re-processes intelligently.
 
 - **Corpus coverage:**
-  - - [x] ANN
+  - [x] ANN
   - [x] CNN
   - [x] RNN
   - [x] LSTM
@@ -75,21 +75,18 @@ Recursive character splitting and markdown header splitting with max chunk size 
 - **Embedding model:** - all-MiniLM-L6-v2 via HuggingFaceEmbeddings/sentence-transformers
   
 
-- **Why this embedding model:**
-  *(what tradeoffs did you consider? speed vs quality? local vs API?)*
+- **Why this embedding model:** Runs entirely on CPU locally, mitigating API costs, reducing latency over internet connections, and ensuring proprietary data never leaves the machine.
 
-- **Similarity metric:**
-  *(cosine or dot product — which did you use and why?)*
+- **Similarity metric:** `cosine` similarity space.
+  
 
-- **Retrieval k:**
-  *(how many chunks do you retrieve per query and why?)*
+- **Retrieval k:** `4` chunks per query to build a rich context up to roughly 2000 tokens while fitting safely inside context windows.
 
-- **Similarity threshold:**
-  *(what is your minimum score to pass the hallucination guard?
-  how did you arrive at this number?)*
 
-- **Metadata filtering:**
-  *(can users filter by topic or difficulty? how is this implemented?)*
+- **Similarity threshold:** `0.3` minimum score to pass the hallucination guard. Empirically tuned to ensure only reasonably matching results are returned to the final generation node.
+
+- **Metadata filtering:**  The `query` method supports explicit mappings for `topic_filter` and `difficulty_filter`, combined using `$and` for granular ChromaDB queries via the UI.
+ *
 
 ---
 
@@ -98,33 +95,29 @@ Recursive character splitting and markdown header splitting with max chunk size 
 - **Framework:** LangGraph
 
 - **Graph nodes:**
-  *(describe what each node does in one sentence)*
-  | Node | Responsibility |
+ | Node | Responsibility |
   |---|---|
-  | query_rewrite_node | |
-  | retrieval_node | |
-  | generation_node | |
+  | query_rewrite_node | Transforms a conversational query into a dense, keyword-rich search term. |
+  | retrieval_node | Embeds the rewritten query and searches ChromaDB for the top-k relevant chunks. |
+  | generation_node | Feeds context chunks to the LLM to generate a strictly grounded, cited answer. |
 
-- **Conditional edges:**
-  *(what condition triggers each edge? what happens when no context is found?)*
-
+- **Conditional edges:** After `retrieval`, the `should_retry_retrieval` condition checks if any chunk passed the similarity threshold. If none did, the graph takes the `"end"` edge (triggering the hallucination guard message). If chunks exist, it takes the `"generate"` edge to `generation_node`.
+ 
 - **Hallucination guard:**
-  *(exactly what does your system return when similarity threshold is not met?
-  paste the message here)*
+   When similarity thresholds fail, the system intercepts and immediately returns the `NO_CONTEXT_RESPONSE` text explaining that no relevant info was found.
 
 - **Query rewriting:**
-  *(give one example of a raw user query and how your system rewrites it)*
-  - Raw query:
-  - Rewritten query:
+  - Raw query: "Can you tell me how LSTMs solve the vanishing gradient issue?"
+  - Rewritten query: "LSTM long short-term memory vanishing gradient problem solution gate"
 
-- **Conversation memory:**
-  *(how is history maintained across turns? what happens when context window fills up?)*
+- **Conversation memory:** Maintained via the `MemorySaver` checkpointer in LangGraph, keyed by `thread_id` from the Streamlit session state. This captures multi-turn history until the application restarts.
+ 
 
-- **LLM provider:**
-  *(which provider did your team use — Groq, Ollama, or LM Studio? which model?)*
+- **LLM provider:** `Groq` using `llama-3.1-8b-instant`.
+ 
 
-- **Why this provider:**
-  *(what was the deciding factor for your team?)*
+- **Why this provider:**  Groq's LPU provides virtually near-zero-latency generation which is critical for real-time interview preparations and streaming responses.
+  
 
 ---
 
