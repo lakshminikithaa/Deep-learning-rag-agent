@@ -125,23 +125,22 @@ Recursive character splitting and markdown header splitting with max chunk size 
 ### Prompt Layer
 
 - **System prompt summary:**
-  *(describe the agent persona and the key constraints in your system prompt)*
+  *The system prompt defines the agent as a senior machine learning engineer conducting a technical interview preparation session. It enforces strict grounding in provided context, prohibits use of external knowledge, and requires all answers to include source citations in a fixed format. It also adapts response depth based on difficulty metadata and ensures partial answers are fairly evaluated. Additional constraints were added to explicitly prevent hallucination by disallowing any unsupported information from being included in responses.*
 
 - **Question generation prompt:**
-  *(what inputs does it take and what does it return?)*
+  *The question generation prompt takes a retrieved context chunk and a difficulty level as input. It generates a single interview-style question that requires conceptual understanding and reasoning rather than simple recall. The output is a structured JSON object containing the question, difficulty level, topic, a model answer grounded strictly in the context, a follow-up question, and source citations. Additional constraints were added to prevent trivial or definition-based questions and enforce deeper conceptual reasoning.*
 
 - **Answer evaluation prompt:**
-  *(how does it score a candidate answer? what is the scoring rubric?)*
+  *The answer evaluation prompt takes a question, candidate answer, and source context as input. It evaluates the answer strictly against the provided material and assigns a score from 0 to 10 based on completeness, correctness, and depth. The rubric penalizes vague or incomplete answers and rewards precise, well-articulated responses. The output includes structured JSON fields such as score, correct aspects, missing concepts, an ideal answer, interview verdict, and a coaching tip. Additional strict scoring instructions were added to prevent inflated scores for weak answers. *
 
 - **JSON reliability:**
-  *(what did you add to your prompts to ensure consistent JSON output?)*
+  *To ensure consistent JSON output, all prompts explicitly instruct the model to respond with only the JSON object and no additional text, explanations, or markdown code fences. This prevents parsing errors and ensures compatibility with downstream programmatic processing in the pipeline. These constraints were added after identifying that models may otherwise include extra formatting such as ```json blocks or natural language explanations.*
 
 - **Failure modes identified:**
-  *(list at least one failure mode per prompt and how you addressed it)*
-  -
-  -
-  -
-
+  *- Question Generation Prompt: Sometimes produced trivial or definition-based questions. This was addressed by adding constraints requiring reasoning-based and non-trivial questions.
+- Answer Evaluation Prompt: Tended to give overly generous scores for weak answers. This was fixed by adding strict scoring instructions to penalize missing key concepts.
+- System Prompt: Risk of hallucination when context was incomplete. This was mitigated by explicitly prohibiting use of unsupported or external knowledge.*
+- 
 ---
 
 ### Interface Layer
