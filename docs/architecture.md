@@ -4,7 +4,7 @@
 ## Members and Roles:
 - Corpus Architect & pipeline engineer: Lakshmi Nikitha Ankam
 - UX Lead:Sai Sukruth Chatla
-- Prompt Engineer: Monica valli
+- Prompt Engineer: Monica Valli Kandulapati
 - QA Lead: Vihal Thatipamula
 
 ---
