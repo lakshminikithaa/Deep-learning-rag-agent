@@ -1,5 +1,5 @@
 # System Architecture
-## Team: ___________________
+## Team: RAG Architects
 ## Date: 3/24/2026
 ## Members and Roles:
 - Corpus Architect: Lakshmi Nikitha Ankam
