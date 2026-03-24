@@ -3,7 +3,7 @@
 ## Date: 3/24/2026
 ## Members and Roles:
 - Corpus Architect: Lakshmi Nikitha Ankam
-- pipeline engineer:
+- pipeline engineer:Manoj Kumar Atti
 - UX Lead:Sai Sukruth Chatla
 - Prompt Engineer: Monica Valli Kandulapati
 - QA Lead: Vihal Thatipamula
