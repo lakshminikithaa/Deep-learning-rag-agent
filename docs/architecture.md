@@ -33,29 +33,23 @@ The diagram must show:
 
 - **Source files location:** `data/corpus/`
 - **File formats used:**
-  *(which file types did your team ingest — .md, .pdf, or both?)*
+  Both .md (Markdown) and .pdf (Academic PDFs).
 
 - **Landmark papers ingested:**
-  *(list the papers your team located and ingested, one per line)*
-  -
-  -
-  -
-
+  - Markdown structured study guides (ann_intermediate.md, cnn_intermediate.md, rnn_intermediate.md, lstm_intermediate.md, seq2seq_intermediate.md, autoencoder_intermediate.md)
+  - 
 - **Chunking strategy:**
-  *(what chunk size and overlap did you choose, and why?
-  e.g. 512 characters with 50 overlap — justify this choice)*
+Recursive character splitting and markdown header splitting with max chunk size of 512 characters and 50 characters overlap. This balances context richness with retrieval precision and prevents concepts that span chunk boundaries from being lost.
 
 - **Metadata schema:**
-  *(list every metadata field your chunks carry and explain why each field exists)*
   | Field | Type | Purpose |
   |---|---|---|
-  | topic | string | |
-  | difficulty | string | |
-  | type | string | |
-  | source | string | |
-  | related_topics | list | |
-  | is_bonus | bool | |
-
+  | topic | string | The deep learning topic covered (e.g. LSTM, CNN). |
+  | difficulty | string | Complexity level (beginner, intermediate, advanced). |
+  | type | string | Content type (e.g. concept_explanation). |
+  | source | string | Source document filename (e.g. lstm_intermediate.md). |
+  | related_topics | list | Other related DL topics for contextual expansion. |
+  | is_bonus | bool | Flags whether the topic is a bonus/advanced topic (e.g. SOM, GAN). |
 - **Duplicate detection approach:**
   *(how is the chunk ID generated? why is a content hash more reliable than a filename?)*
 
