@@ -36,8 +36,9 @@ The diagram must show:
   Both .md (Markdown) and .pdf (Academic PDFs).
 
 - **Landmark papers ingested:**
+-  HochreiterS1997.pdf (LSTM Original Paper)
+  - NIPS-2012-imagenet-classification.pdf (AlexNet Original Paper)
   - Markdown structured study guides (ann_intermediate.md, cnn_intermediate.md, rnn_intermediate.md, lstm_intermediate.md, seq2seq_intermediate.md, autoencoder_intermediate.md)
-  - 
 - **Chunking strategy:**
 Recursive character splitting and markdown header splitting with max chunk size of 512 characters and 50 characters overlap. This balances context richness with retrieval precision and prevents concepts that span chunk boundaries from being lost.
 
@@ -51,15 +52,15 @@ Recursive character splitting and markdown header splitting with max chunk size 
   | related_topics | list | Other related DL topics for contextual expansion. |
   | is_bonus | bool | Flags whether the topic is a bonus/advanced topic (e.g. SOM, GAN). |
 - **Duplicate detection approach:**
-  *(how is the chunk ID generated? why is a content hash more reliable than a filename?)*
+  A deterministic 16-character hex string ID is generated derived from the SHA-256 hash of `source::chunk_text`. Content hashing is used rather than simple filename matching because it detects identical content even if files are renamed, and re-processes intelligently.
 
 - **Corpus coverage:**
-  - [ ] ANN
-  - [ ] CNN
-  - [ ] RNN
-  - [ ] LSTM
-  - [ ] Seq2Seq
-  - [ ] Autoencoder
+  - - [x] ANN
+  - [x] CNN
+  - [x] RNN
+  - [x] LSTM
+  - [x] Seq2Seq
+  - [x] Autoencoder
   - [ ] SOM *(bonus)*
   - [ ] Boltzmann Machine *(bonus)*
   - [ ] GAN *(bonus)*
@@ -69,10 +70,10 @@ Recursive character splitting and markdown header splitting with max chunk size 
 ### Vector Store Layer
 
 - **Database:** ChromaDB — PersistentClient
-- **Local persistence path:** *(what is your CHROMA_DB_PATH?)*
+- **Local persistence path:** `./data/chroma_db`
 
-- **Embedding model:**
-  *(name and provider — e.g. all-MiniLM-L6-v2 via sentence-transformers)*
+- **Embedding model:** - all-MiniLM-L6-v2 via HuggingFaceEmbeddings/sentence-transformers
+  
 
 - **Why this embedding model:**
   *(what tradeoffs did you consider? speed vs quality? local vs API?)*
