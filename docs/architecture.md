@@ -1,12 +1,11 @@
 # System Architecture
 ## Team: ___________________
-## Date: ___________________
+## Date: 3/24/2026
 ## Members and Roles:
-- Corpus Architect: ___________________
-- Pipeline Engineer: ___________________
-- UX Lead: ___________________
-- Prompt Engineer: ___________________
-- QA Lead: ___________________
+- Corpus Architect & pipeline engineer: Lakshmi Nikitha Ankam
+- UX Lead:Sai Sukruth Chatla
+- Prompt Engineer: Monica valli
+- QA Lead: Vihal Thatipamula
 
 ---
 
