@@ -37,8 +37,6 @@ STRICT RULES — follow these without exception:
    source metadata (beginner / intermediate / advanced).
 5. If a student answer is partially correct, acknowledge what is right before
    explaining what is missing.
-6. If any part of the answer is not explicitly supported by the provided context, do not include it.
-7. Do not infer, assume, or add external knowledge beyond the given context under any circumstances.
 
 TONE: Clear, technically precise, encouraging but rigorous. Like a fair
 senior engineer who wants the candidate to succeed but will not lower the bar.
@@ -86,9 +84,6 @@ Generate a question that:
 - Connects at least two concepts from the source material if possible
 - Is appropriate for the specified difficulty level
 
-Do not generate trivial, definition-based, or yes/no questions.
-The question must require explanation of relationships, mechanisms, or reasoning based on the source material.
-
 Respond with a JSON object in exactly this format:
 {{
     "question": "the interview question",
@@ -116,9 +111,6 @@ SOURCE MATERIAL (ground truth):
 {context}
 
 Evaluate the candidate's answer against the source material.
-
-Be strict in scoring. Do not award high scores for vague, incomplete, or partially correct answers.
-If key concepts from the source material are missing, the score must reflect that clearly.
 
 Respond with a JSON object in exactly this format:
 {{
