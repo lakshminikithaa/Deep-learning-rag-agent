@@ -207,31 +207,35 @@ Recursive character splitting and markdown header splitting with max chunk size 
 
 ### Interface Layer
 
-- **Framework:** *(Streamlit / Gradio)*
-- **Deployment platform:** *(Streamlit Community Cloud / HuggingFace Spaces)*
-- **Public URL:** *(paste your deployed app URL here once live)*
+- **Framework:** Streamlit
+- **Deployment platform:** Streamlit Community Cloud
+- **Public URL:** https://deep-learning-rag-interview-agent.streamlit.app/
 
 - **Ingestion panel features:**
-  *(describe what the user sees — file uploader, status display, document list)*
+  The left sidebar provides a corpus ingestion workflow where users can upload `.pdf` and `.md` study materials through a file uploader, then trigger ingestion with an **Ingest Documents** button. The panel also displays ingestion feedback such as success, duplicate-skip behavior, and errors if any occur. Below that, users can view the list of already ingested documents, inspect document-level metadata such as topic and chunk count, and use **View** or **Delete** actions to manage the corpus directly from the interface.
+
 
 - **Document viewer features:**
-  *(describe how users browse ingested documents and chunks)*
+ The left sidebar provides a corpus ingestion workflow where users can upload `.pdf` and `.md` study materials through a file uploader, then trigger ingestion with an **Ingest Documents** button. The panel also displays ingestion feedback such as success, duplicate-skip behavior, and errors if any occur. Below that, users can view the list of already ingested documents, inspect document-level metadata such as topic and chunk count, and use **View** or **Delete** actions to manage the corpus directly from the interface.
+
 
 - **Chat panel features:**
-  *(describe how citations appear, how the hallucination guard is surfaced,
-  and any filters available)*
+  The center panel acts as a document browser and chunk inspector. Users can select any ingested document from a dropdown and then scroll through all retrieved chunks belonging to that source. Each chunk is displayed with metadata badges such as topic, difficulty, content type, and bonus status where applicable. This viewer helps users verify how uploaded material was chunked and what context is available to the retriever.
+
 
 - **Session state keys:**
-  *(list the st.session_state keys your app uses and what each stores)*
   | Key | Stores |
   |---|---|
-  | chat_history | |
-  | ingested_documents | |
-  | selected_document | |
-  | thread_id | |
+  | chat_history | Full conversation history between user and assistant for the active session. |
+  | ingested_documents | List of documents currently available in the vector store, including metadata such as topic and chunk count. |
+  | selected_document | The document currently chosen in the document viewer panel. |
+  | thread_id | Unique conversation/session identifier passed into LangGraph memory for multi-turn persistence. |
+  | topic_filter | Currently selected topic filter from the chat interface. |
+  | difficulty_filter | Currently selected difficulty filter from the chat interface. |
+  | last_ingestion_result | Most recent ingestion outcome, including added chunks, skipped duplicates, and any ingestion errors. |
 
 - **Stretch features implemented:**
-  *(streaming responses, async ingestion, hybrid search, re-ranking, other)*
+    Implemented a custom dark-themed Streamlit UI for a more polished interview-demo experience. Added document management features such as in-app viewing and deletion of ingested files, metadata badges for chunk inspection, filter-based retrieval controls, and deployed the application publicly through Streamlit Community Cloud. The interface also supports persistent multi-turn conversation memory through session state and LangGraph thread tracking.
 
 ---
 
