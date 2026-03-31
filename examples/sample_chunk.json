@@ -1,0 +1,11 @@
+{
+  "chunk_text": "Long Short-Term Memory networks (LSTMs) solve the vanishing gradient problem that affects standard RNNs. They do this through three learned gates: the forget gate decides what information to discard from the cell state; the input gate decides what new information to store; and the output gate decides what portion of the cell state to expose as the hidden state. This gated architecture allows LSTMs to selectively maintain relevant information across arbitrarily long sequences, making them well-suited for tasks such as machine translation, speech recognition, and time series forecasting where long-range dependencies are critical.",
+  "metadata": {
+    "topic": "LSTM",
+    "difficulty": "intermediate",
+    "type": "concept_explanation",
+    "source": "lstm.md",
+    "related_topics": ["RNN", "vanishing_gradient", "Seq2Seq"],
+    "is_bonus": false
+  }
+}
