@@ -4,6 +4,8 @@ A RAG-powered interview preparation agent built with LangChain, LangGraph,
 and ChromaDB. Ingest deep learning study material and chat with it to
 generate and answer technical interview questions.
 
+Our video presentation link (same as the one in the presentation.md file) : https://drive.google.com/file/d/1t11hPfJCfWVuqiM8q0nDdv3BBaRboUrm/view?usp=drive_link 
+
 ---
 
 ## Overview
