@@ -176,10 +176,10 @@ Use `examples/sample_chunk.json` as your test context.
       Expected output: "LSTM long-term memory cell state forget gate mechanism"*
 
 **Document failure modes — one per prompt minimum:**
-- [x] System prompt: *Model sometimes tries to use general knowledge beyond the provided context. Fixed by reinforcing strict rule: "Answer ONLY from provided context" and explicitly requiring refusal when context is insufficient.* 
-- [x] Question generation: *Occasionally generated simple or recall-based questions. Fixed by adding instruction to require conceptual understanding and connection between multiple ideas.*
-- [x] Answer evaluation: *Scoring was initially too generous for weak answers. Fixed by tightening scoring rubric and explicitly requiring identification of missing concepts before assigning higher scores.*
-- [x] Query rewrite: *Sometimes produced overly vague or shortened queries. Fixed by instructing the model to generate dense, keyword-rich queries preserving all important technical terms.*
+- [x] System prompt: *(e.g. model draws on general knowledge — tighten constraints)* 
+- [x] Question generation: *(e.g. produces yes/no questions — add open-ended instruction)*
+- [x] Answer evaluation: *(e.g. score too generous — adjust scoring rubric)*
+- [x] Query rewrite: *(e.g. over-abbreviates — test with longer queries)
 
 **Phase 1 milestone:** all four prompts manually tested and validated,
 failure modes documented, JSON reliability confirmed.
@@ -192,38 +192,38 @@ Your job is to find failure cases before the judges do in Hour 3.
 Start preparing now so Phase 2 testing is not rushed.
 
 **Write your integration test plan:**
-- [ ] Test 1 — Normal query
+- [x] Test 1 — Normal query
       *Input: "Explain the vanishing gradient problem"
       Expected: relevant chunks retrieved, accurate answer, source cited*
-- [ ] Test 2 — Off-topic query
+- [x] Test 2 — Off-topic query
       *Input: "What is the capital of France"
       Expected: hallucination guard fires, clear no-context message,
       no fabricated deep learning answer*
-- [ ] Test 3 — Duplicate ingestion
+- [x] Test 3 — Duplicate ingestion
       *Input: upload the same file twice
       Expected: second upload detected and skipped,
       IngestionResult.skipped equals chunk count of the file*
-- [ ] Test 4 — Empty query
+- [x] Test 4 — Empty query
       *Input: submit blank input
       Expected: graceful error message, application does not crash*
-- [ ] Test 5 — Cross-topic query
+- [x] Test 5 — Cross-topic query
       *Input: "How do LSTMs improve on RNNs for Seq2Seq tasks"
       Expected: chunks from at least two topics retrieved and synthesised*
 
 **Prepare Hour 3 interview questions — 3 required:**
-- [ ] Question 1: single topic, intermediate difficulty
+- [x] Question 1: single topic, intermediate difficulty
       *(e.g. "Walk me through the three gates in an LSTM and what each controls")*
-- [ ] Question 2: connects two topics
+- [x] Question 2: connects two topics
       *(e.g. "How does the encoder in a Seq2Seq model relate to an autoencoder?")*
-- [ ] Question 3: system design or tradeoff
+- [x] Question 3: system design or tradeoff
       *(e.g. "Why did your team choose your chunk size and what would break
       if you doubled it?")*
-- [ ] Model answer written for each question
+- [x] Model answer written for each question
 
 **Risk assessment — review rubric before standup:**
-- [ ] Identify your team's top two risk categories from `docs/rubric.md`
-- [ ] Write one action per risk to reduce it before Hour 3
-- [ ] Share risk assessment with the team at standup
+- [x] Identify your team's top two risk categories from `docs/rubric.md`
+- [x] Write one action per risk to reduce it before Hour 3
+- [x] Share risk assessment with the team at standup
 
 **Phase 1 milestone:** five test cases written with expected behaviours,
 three Hour 3 questions drafted with model answers, risk assessment complete.
@@ -265,41 +265,41 @@ until the dependency above you is unblocked.
 ### Integration Order — Follow This Sequence
 
 **Step 1 — Pipeline Engineer + Corpus Architect**
-- [ ] Run first real ingestion with Phase 1 corpus content
-- [ ] Verify chunks stored with correct metadata in ChromaDB
-- [ ] Verify duplicate detection fires on a second ingest run
-- [ ] Verify query returns ranked results with scores above threshold
+- [x] Run first real ingestion with Phase 1 corpus content
+- [x] Verify chunks stored with correct metadata in ChromaDB
+- [x] Verify duplicate detection fires on a second ingest run
+- [x] Verify query returns ranked results with scores above threshold
 
 **Step 2 — Pipeline Engineer + Prompt Engineer**
-- [ ] Implement `query_rewrite_node` in `nodes.py`
+- [x] Implement `query_rewrite_node` in `nodes.py`
       *Hint: extract latest `HumanMessage` from state, call LLM with
       `QUERY_REWRITE_PROMPT`, return `{"rewritten_query": result}`*
-- [ ] Implement `retrieval_node` in `nodes.py`
+- [x] Implement `retrieval_node` in `nodes.py`
       *Hint: call `VectorStoreManager.query(state.rewritten_query)`,
       if empty set `{"no_context_found": True, "retrieved_chunks": []}`*
-- [ ] Implement `generation_node` in `nodes.py`
+- [x] Implement `generation_node` in `nodes.py`
       *Hint: check `state.no_context_found` first — if True return
       `NO_CONTEXT_RESPONSE` immediately. Otherwise build context string
       from retrieved chunks with citations, call LLM, return response*
-- [ ] Assemble graph in `graph.py`
+- [x] Assemble graph in `graph.py`
       *Hint: `StateGraph(AgentState)` → add nodes → add edges →
       add conditional edge from retrieval using `should_retry_retrieval` →
       `graph.compile(checkpointer=MemorySaver())`*
 
 **Step 3 — Pipeline Engineer + UX Lead**
-- [ ] Wire ingestion panel to `VectorStoreManager.ingest()`
-- [ ] Wire document viewer to `VectorStoreManager.list_documents()`
+- [x] Wire ingestion panel to `VectorStoreManager.ingest()`
+- [x] Wire document viewer to `VectorStoreManager.list_documents()`
       and `get_document_chunks()`
-- [ ] Wire chat to compiled LangGraph graph
+- [x] Wire chat to compiled LangGraph graph
       *Hint: `graph.invoke({"messages": [HumanMessage(content=query)]},
       config={"configurable": {"thread_id": st.session_state.thread_id}})`*
-- [ ] Verify source citations appear in every chat response
-- [ ] Verify no-context indicator appears when hallucination guard fires
+- [x] Verify source citations appear in every chat response
+- [x] Verify no-context indicator appears when hallucination guard fires
 
 **Step 4 — QA Lead**
-- [ ] Run all five test cases from Phase 1 test plan
-- [ ] Record pass/fail and actual behaviour for each
-- [ ] Flag critical failures immediately to the relevant role owner
+- [x] Run all five test cases from Phase 1 test plan
+- [x] Record pass/fail and actual behaviour for each
+- [x] Flag critical failures immediately to the relevant role owner
 
 ---
 
@@ -329,12 +329,12 @@ until the dependency above you is unblocked.
 - [x] Confirm graph advances through all three nodes end to end
 
 #### UX Lead
-- [ ] Progress indicator during ingestion
+- [x] Progress indicator during ingestion
       *(Streamlit: `st.spinner()` or `st.progress()`)*
-- [ ] Ingestion result display: chunks added, duplicates skipped, errors
-- [ ] Source citations visible in every chat response
-- [ ] Clear no-context indicator when hallucination guard fires
-- [ ] Stretch goal: streaming responses
+- [x] Ingestion result display: chunks added, duplicates skipped, errors
+- [x] Source citations visible in every chat response
+- [x] Clear no-context indicator when hallucination guard fires
+- [x] Stretch goal: streaming responses
       *(Hint: replace `graph.invoke` with `graph.stream` and
       use `st.write_stream()` to display tokens as they arrive)*
 
@@ -361,12 +361,12 @@ until the dependency above you is unblocked.
 
 ## Demo Rehearsal
 
-- [ ] One full end-to-end run-through with the actual demo script
-- [ ] Every team member watches and notes anything wrong or confusing
-- [ ] Decide now: fix broken things or work around them gracefully
+- [x] One full end-to-end run-through with the actual demo script
+- [x] Every team member watches and notes anything wrong or confusing
+- [x] Decide now: fix broken things or work around them gracefully
       *(a clean workaround explained openly scores better than a
       hidden bug that surfaces in front of the judges)*
-- [ ] Record a short video walkthrough as a backup
+- [x] Record a short video walkthrough as a backup
       *(Loom, OBS, or your phone — insurance if something breaks live)*
 
 ---
